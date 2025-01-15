@@ -9,7 +9,7 @@ import java.awt.Color;
 public class PanelMenu extends JPanel {
 
 	private static final long serialVersionUID = 1L;
-	private JButton btnConsultar, btnOtrosHorarios, btnVerReuniones;
+	private JButton btnConsultar, btnOtrosHorarios, btnVerReuniones, btnDesconectar;
 
 	/**
 	 * Create the panel.
@@ -30,13 +30,18 @@ public class PanelMenu extends JPanel {
 		
 		btnOtrosHorarios = new JButton("CONSULTAR OTROS HORARIOS");
 		btnOtrosHorarios.setFont(new Font("Tahoma", Font.PLAIN, 15));
-		btnOtrosHorarios.setBounds(173, 235, 270, 34);
+		btnOtrosHorarios.setBounds(173, 229, 270, 34);
 		add(btnOtrosHorarios);
 		
 		btnVerReuniones = new JButton("VER REUNIONES");
 		btnVerReuniones.setFont(new Font("Tahoma", Font.PLAIN, 15));
-		btnVerReuniones.setBounds(173, 310, 270, 34);
+		btnVerReuniones.setBounds(173, 303, 270, 34);
 		add(btnVerReuniones);
+		
+		btnDesconectar = new JButton("DESCONECTAR");
+		btnDesconectar.setFont(new Font("Tahoma", Font.PLAIN, 13));
+		btnDesconectar.setBounds(10, 11, 133, 34);
+		add(btnDesconectar);
 
 	}
 
@@ -64,8 +69,13 @@ public class PanelMenu extends JPanel {
 		this.btnVerReuniones = btnVerReuniones;
 	}
 
-	
+	public JButton getBtnDesconectar() {
+		return btnDesconectar;
+	}
 
+	public void setBtnDesconectar(JButton btnDesconectar) {
+		this.btnDesconectar = btnDesconectar;
+	}
 	
 	
 }

@@ -5,6 +5,7 @@ import javax.swing.JLabel;
 import java.awt.Font;
 import javax.swing.JTextField;
 import javax.swing.JPasswordField;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import java.awt.Color;
 
@@ -24,7 +25,7 @@ public class PanelLogin extends JPanel {
 		
 		JLabel lblLogin = new JLabel("LOGIN");
 		lblLogin.setFont(new Font("Tahoma", Font.PLAIN, 29));
-		lblLogin.setBounds(276, 113, 141, 28);
+		lblLogin.setBounds(276, 151, 141, 28);
 		add(lblLogin);
 		
 		JLabel lblUsuario = new JLabel("USUARIO");
@@ -48,10 +49,16 @@ public class PanelLogin extends JPanel {
 		
 		btnContinuar = new JButton("CONTINUAR");
 		btnContinuar.setFont(new Font("Tahoma", Font.PLAIN, 15));
-		btnContinuar.setBounds(259, 360, 133, 34);
+		btnContinuar.setBounds(259, 337, 133, 34);
 		add(btnContinuar);
 		
 		
+		JLabel lblCentro = new JLabel();
+		lblCentro.setBounds(149, 11, 319, 101);
+		add(lblCentro);
+		
+		// Ajustar la imagen al JLabel
+		ImageUtils.ajustarImagenLabel(lblCentro, "C:\\Users\\in2dm3-a\\git\\2RDM-6\\ElorReto2_G6\\archivos\\elorrieta.png");
 		
 
 	}
@@ -79,10 +86,4 @@ public class PanelLogin extends JPanel {
 	public void setBtnContinuar(JButton btnContinuar) {
 		this.btnContinuar = btnContinuar;
 	}
-
-
-
-	
-	
-	
 }

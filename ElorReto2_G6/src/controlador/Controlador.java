@@ -2,6 +2,12 @@ package controlador;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,16 +17,21 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
-
 import hibernate.HibernateUtil;
 import modelo.Users;
 import vista.PanelLogin;
 import vista.Principal;
+import vista.Principal.enumAcciones;
 
 public class Controlador implements ActionListener {
 	private ArrayList<Users> usuarios;
 	private vista.Principal vistaPrincipal;
 	private PanelLogin panelLogin;
+	
+	private Socket cliente;
+	private DataOutputStream salida;
+	private DataInputStream entrada;
+	private Users usuario = new Users();
 
 	/*
 	 * *** CONSTRUCTORES ***
@@ -35,10 +46,11 @@ public class Controlador implements ActionListener {
 	    this.vistaPrincipal = vistaPrincipal;
 	    this.inicializarControlador();
 	    cargarUsuariosDesdeBD(); // Cargar los usuarios al iniciar el controlador
+	    conectarConServidor(cliente,salida,entrada);
 	}
 
-	
 	private void inicializarControlador() {
+		
 
 		// Atribuyo los paneles
 		panelLogin = this.vistaPrincipal.getPanelLogin();
@@ -64,6 +76,10 @@ public class Controlador implements ActionListener {
 		this.vistaPrincipal.getPanelMenu().getBtnVerReuniones().addActionListener(this);
 		this.vistaPrincipal.getPanelMenu().getBtnVerReuniones()
 				.setActionCommand(Principal.enumAcciones.CARGAR_REUNIONES.toString());
+		
+		this.vistaPrincipal.getPanelMenu().getBtnDesconectar().addActionListener(this);
+		this.vistaPrincipal.getPanelMenu().getBtnDesconectar()
+				.setActionCommand(Principal.enumAcciones.DESCONECTAR.toString());
 		
 		// Acciones en el Panel Horarios
 		
@@ -119,6 +135,12 @@ public class Controlador implements ActionListener {
 			
 		case INSERTAR_LOGIN:
 			insertarLogin();
+			break;
+			
+			
+		case DESCONECTAR:
+			this.vistaPrincipal.mVisualizarPaneles(Principal.enumAcciones.CARGAR_LOGIN);
+			JOptionPane.showMessageDialog(null, "Se ha desconectado con exito.");
 			break;
 
 		default:
@@ -197,6 +219,40 @@ public class Controlador implements ActionListener {
 	    
 	    
 	}
+	
+	
+	
+	private void conectarConServidor(Socket cliente, DataOutputStream salida, DataInputStream entrada) {
+		
+		 String host = "localhost";
+	     int puerto = 5000;
+
+	       try {
+	    	   
+			cliente = new Socket(host, puerto); 
+			System.out.println("Conectado al servidor con puerto: " + puerto);
+			
+			 entrada = new DataInputStream(cliente.getInputStream());
+	         salida = new DataOutputStream(cliente.getOutputStream());
+	        
+
+	        // Recibo y contesto al primer mensaje del servidor
+	        String preguntaServidor1 = entrada.readUTF();
+	        System.out.println(preguntaServidor1);
+	        
+	        String fraseParaServidor = "Hola Servidor";
+	        salida.writeUTF(fraseParaServidor); 
+			
+		
+	       } catch (IOException e) {
+			
+			e.printStackTrace();
+		
+	       }
+	       
+	}
+
+
 	
 
 	

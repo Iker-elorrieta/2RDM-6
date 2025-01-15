@@ -22,6 +22,8 @@ public class Principal extends JFrame {
 		
 		INSERTAR_LOGIN,
 		
+		DESCONECTAR,
+		
 		
 		
 		
