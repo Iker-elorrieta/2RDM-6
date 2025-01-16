@@ -2,6 +2,8 @@ package controlador;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -16,8 +18,10 @@ import javax.swing.JOptionPane;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 
 import hibernate.HibernateUtil;
+import modelo.Ciclos;
 import modelo.Users;
 import vista.PanelLogin;
 import vista.Principal;
@@ -32,6 +36,20 @@ public class Controlador implements ActionListener {
 	private DataOutputStream salida;
 	private DataInputStream entrada;
 	private Users usuario = new Users();
+	
+	private String user; //Usuario recogido del TextField
+	private String pass; //Contraseña recogido del TextField
+	
+	private String usuarioConectado; //Para almacenar el usuario con el que me he logueado
+	private String contrasenaConectada; //Para almacenar la contraseña con el que me he logueado
+	
+	private static int cicloId = 6; 
+	private static String nombreCiclo = "ARI";
+	
+	private String host = "localhost";
+	private int puerto = 5000;
+	
+	private Session session;
 
 	/*
 	 * *** CONSTRUCTORES ***
@@ -45,8 +63,21 @@ public class Controlador implements ActionListener {
 	public Controlador(vista.Principal vistaPrincipal) {
 	    this.vistaPrincipal = vistaPrincipal;
 	    this.inicializarControlador();
+	    this.session = HibernateUtil.getSessionFactory().openSession();
 	    cargarUsuariosDesdeBD(); // Cargar los usuarios al iniciar el controlador
-	    conectarConServidor(cliente,salida,entrada);
+	   
+	    
+	    
+	 // Agregar Boton de cierre de ventana para manejar el cierre
+	    
+ 		vistaPrincipal.addWindowListener(new WindowAdapter() {
+ 			@Override
+ 			public void windowClosing(WindowEvent e) {
+ 				
+ 				cerrarSesion();
+ 				System.exit(0); 
+ 			}
+ 		});
 	}
 
 	private void inicializarControlador() {
@@ -135,10 +166,13 @@ public class Controlador implements ActionListener {
 			
 		case INSERTAR_LOGIN:
 			insertarLogin();
+			conectarConServidor(cliente,salida,entrada);
+			insertarCicloEnBD(accion);
 			break;
 			
 			
 		case DESCONECTAR:
+			
 			this.vistaPrincipal.mVisualizarPaneles(Principal.enumAcciones.CARGAR_LOGIN);
 			JOptionPane.showMessageDialog(null, "Se ha desconectado con exito.");
 			break;
@@ -151,58 +185,54 @@ public class Controlador implements ActionListener {
 
 	}
 
+
 	//Consulta Hibernate para recoger todos los profesores
 	
 	private void cargarUsuariosDesdeBD() {
-		
-		usuarios = new ArrayList<>(); 
-		 
-		SessionFactory sesion = HibernateUtil.getSessionFactory();
-        Session session = sesion.openSession();
-        
-        try {
-            
-        	// Consulta para obtener los profesores
-        	
-            String hql =  "FROM Users u WHERE u.tipos.name = 'profesor'";
-            Query q = session.createQuery(hql);
-            
-            @SuppressWarnings("unchecked")
-            List<Users> users = q.list();
+	    
+		usuarios = new ArrayList<>();
 
-            // Agregar los usuarios al ArrayList 'usuarios'
-            
-            for (Users user : users) {
-                usuarios.add(user);
-                System.out.println("Usuario: " + user.getUsername());
-                System.out.println("Contraseña: " + user.getPassword());
-            }
+	    try {
+	        // Consulta para obtener los usuarios
+	        String hql = "FROM Users u WHERE u.tipos.name = 'profesor'";
+	        Query q = session.createQuery(hql);
+	        
+	        @SuppressWarnings("unchecked")
+	        List<Users> users = q.list();
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Error al cargar los profesores de la base de datos.");
-        }
+	        // Agregar los usuarios al ArrayList 'usuarios'
+	        for (Users user : users) {
+	            usuarios.add(user);
+	            System.out.println("Usuario: " + user.getUsername());
+	            System.out.println("Contraseña: " + user.getPassword());
+	        }
 
-        session.close();
-        sesion.close();
-		
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        JOptionPane.showMessageDialog(null, "Error al cargar los profesores de la base de datos.");
+	    }
 	}
 
-
+	//Método de validación de Login 
 	public void insertarLogin() {
 		
-	    String usuario = panelLogin.getUserTxt().getText().trim();
-	    String pass = new String(panelLogin.getPassTxt().getPassword()).trim();
+	     user = panelLogin.getUserTxt().getText().trim();
+	     pass = new String(panelLogin.getPassTxt().getPassword()).trim();
 
-	    if (!usuario.isEmpty() && !pass.isEmpty()) {
+	    if (!user.isEmpty() && !pass.isEmpty()) {
 	        boolean usuarioValido = false;
 
 	        for (Users usu : usuarios) {
 	        	
-	            if (usuario.equals(usu.getUsername()) && pass.equals(usu.getPassword())) { 
+	            if (user.equals(usu.getUsername()) && pass.equals(usu.getPassword())) { 
 	            	
 	            	usuarioValido = true;
 	            	JOptionPane.showMessageDialog(null, "Usuario Correcto");	
+	            	
+	            	//Almaceno el usuario y la contraseña
+	            	usuarioConectado=user;
+	            	contrasenaConectada=pass;
+	            	
 	            	this.vistaPrincipal.mVisualizarPaneles(Principal.enumAcciones.CARGAR_MENU);
 	             }
 	        }
@@ -220,29 +250,38 @@ public class Controlador implements ActionListener {
 	    
 	}
 	
-	
+	//Conexionado del cliente con el servidor
 	
 	private void conectarConServidor(Socket cliente, DataOutputStream salida, DataInputStream entrada) {
-		
-		 String host = "localhost";
-	     int puerto = 5000;
 
 	       try {
 	    	   
 			cliente = new Socket(host, puerto); 
 			System.out.println("Conectado al servidor con puerto: " + puerto);
 			
-			 entrada = new DataInputStream(cliente.getInputStream());
-	         salida = new DataOutputStream(cliente.getOutputStream());
+			entrada = new DataInputStream(cliente.getInputStream());
+	        salida = new DataOutputStream(cliente.getOutputStream());
 	        
 
 	        // Recibo y contesto al primer mensaje del servidor
 	        String preguntaServidor1 = entrada.readUTF();
 	        System.out.println(preguntaServidor1);
 	        
-	        String fraseParaServidor = "Hola Servidor";
+	        String fraseParaServidor = "Hola Servidor, te mando mi usuario y contraseña.";
 	        salida.writeUTF(fraseParaServidor); 
-			
+	        
+	        // Enviar el usuario y la contraseña al servidor
+	        if (usuarioConectado != null && contrasenaConectada != null) {
+	        	
+	        	int contrasena= Integer.parseInt(contrasenaConectada);
+	        	
+	            salida.writeUTF(usuarioConectado);
+	            salida.writeInt(contrasena);
+	        }
+
+	        // Recibo el mensaje con el ID del servidor
+	        int miID = entrada.readInt();
+	        System.out.println("Mi ID es: "+miID);
 		
 	       } catch (IOException e) {
 			
@@ -253,10 +292,50 @@ public class Controlador implements ActionListener {
 	}
 
 
+	//Insercion de un ciclo nuevo en la base de datos SQL
 	
+	private void insertarCicloEnBD(enumAcciones accion) {
+	    Transaction tx = null;
+	   
+	    try {
+	        // Comprobar si el ciclo ya existe en la base de datos
+	         cicloId = 6; 
+	         nombreCiclo = "ARI";
 
+	        Ciclos cicloExistente = (Ciclos) session.createQuery("FROM Ciclos WHERE id = :cicloId")
+	                .setParameter("cicloId", cicloId)
+	                .uniqueResult();
+
+	        if (cicloExistente == null) {
+	            // Si no existe, se inserta un nuevo ciclo
+	            tx = session.beginTransaction();
+	            System.out.println("Insertando Ciclo nuevo...\n");
+
+	            Ciclos nuevoCiclo = new Ciclos(cicloId, nombreCiclo);
+	            session.save(nuevoCiclo);
+
+	            tx.commit();
+	            System.out.println("Ciclo ARI insertado con éxito");
+
+	        } else {
+	            System.out.println("El ciclo con ID " + cicloId + " ya ha sido insertado previamente.");
+	        }
+
+	    } catch (Exception e1) {
+	    	
+	        if (tx != null)
+	            tx.rollback();
+	        e1.printStackTrace();
+	        
+	    }
+	}
 	
 	
-	
-	
+	//Metodo para que al desconectarme cierre la sesion
+	private void cerrarSesion() {
+		 if (session != null && session.isOpen()) {
+		        session.close();
+		        System.out.println("Sesion Cerrada con exito");
+		 }
+	}
 }

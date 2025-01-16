@@ -5,6 +5,8 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import java.awt.Color;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 public class Principal extends JFrame {
 
@@ -59,7 +61,7 @@ public class Principal extends JFrame {
 		//Panel de Reuniones
 		mCrearPanelReuniones();
 		
-
+		
 	}
 
 
