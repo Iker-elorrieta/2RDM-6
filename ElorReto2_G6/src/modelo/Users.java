@@ -199,8 +199,6 @@ public class Users implements java.io.Serializable {
 		this.horarioses = horarioses;
 	}
 
-	
-	
 	//Consulta Hibernate para recoger todos los profesores
 	
 	@Override
@@ -213,7 +211,27 @@ public class Users implements java.io.Serializable {
 				+ horarioses + "]";
 	}
 
+	//Consulta Hibernate para verificar que el usuario introducido es de tipo profesor
+	public int insertarLogin(String usuario, String contrasena) {
+		
+		SessionFactory sesion = HibernateUtil.getSessionFactory();
+		Session session = sesion.openSession();
+		String hql = "from Users where username = '" + usuario + "' AND password = '" + contrasena
+				+ "' AND tipos.name = 'profesor' ";
+		Query q = session.createQuery(hql);
+		Users usuarioComprobado = (Users) q.uniqueResult();
+		if (usuarioComprobado == null) {
+			return 0;
+		} else {
+			return usuarioComprobado.id;
+		}
+	}
+
 	
 
+	
+
+	
+	
 		
 }

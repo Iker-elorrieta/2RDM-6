@@ -14,7 +14,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
 import hibernate.HibernateUtil;
-
+import modelo.Ciclos;
 import modelo.Users;
 
 public class HiloServidor extends Thread {
@@ -27,7 +27,7 @@ public class HiloServidor extends Thread {
 	}
 
 	public void run() {
-		
+		int opcion= 0;
 		boolean conectado = false;
 
 		try {
@@ -37,25 +37,17 @@ public class HiloServidor extends Thread {
 			
 			while (!conectado) {
 				
-				  // Mando el primer mensaje al cliente
-	            salida.writeUTF("Hola Cliente");
-	            
-	            // Leo el primer mensaje del cliente
-	            String mensajeCliente1 = entrada.readUTF();
-	            System.out.println("Mensaje de Cliente: " + mensajeCliente1);
-	            
-	            // Leo el usuario y contraseña mandados por el cliente
-	            String mensajeUsuario = entrada.readUTF();
-	            System.out.println("Usuario: " + mensajeUsuario);
-	            
-	            int mensajeContra = entrada.readInt();
-	            System.out.println("Contrasena: " + mensajeContra);
-	           
-	            //Busco el id del usuario
-				int idUsuarioLogueado= buscarId(mensajeUsuario,mensajeContra);
+				opcion = entrada.readInt();
 				
-				//Mando el ID al Cliente
-				salida.writeInt(idUsuarioLogueado);
+				switch (opcion) {
+				case 1:
+					iniciarSesion(entrada, salida);
+			      break;
+				
+				default:
+					break;
+				}
+				
 				
 
 			}
@@ -65,38 +57,27 @@ public class HiloServidor extends Thread {
 		}
 	}
 
-	private int buscarId(String mensajeUsuario, int mensajeContra) {
-		int idUsuarioLogueado=0;
-		SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
-		Session session = null;
-		
+	private void iniciarSesion(DataInputStream entrada, DataOutputStream salida) {
 		try {
+			String usuario = entrada.readUTF();
+			String password = entrada.readUTF();
+			int usuarioComprobado = new Users().insertarLogin(usuario, password);
+			salida.writeInt(usuarioComprobado);
+			salida.flush();
+			//Inserto el ciclo nuevo al iniciar sesion de forma correcta.
+			insertarCicloEnBD();
+		} catch (IOException e) {
 			
-			session = sessionFactory.openSession();
-		        // Consulta para obtener los usuarios
-		    String hql = "FROM Users u WHERE u.username= :usuario and u.password= :contrasena"; 
-			  Query query = session.createQuery(hql);
-			  query.setParameter("usuario", mensajeUsuario);
-			  query.setParameter("contrasena", String.valueOf(mensajeContra));
-				  
-				 @SuppressWarnings("unchecked")
-				List<Users> lusuarios = (List<Users>) query.list();
-				 
-				 for (Users usuario : lusuarios) {
-		             System.out.println("ID: " + usuario.getId());
-		             idUsuarioLogueado=usuario.getId();
-		         }
-
-		    } catch (Exception e) {
-		        e.printStackTrace();
-		        JOptionPane.showMessageDialog(null, "Error al cargar los profesores de la base de datos.");
-		    }
+			e.printStackTrace();
+		}
 		
-		
-		session.close();
-		return idUsuarioLogueado;
 	}
 
+	private void insertarCicloEnBD() {
+		//Creo en el modelo de Ciclos un ciclo nuevo
+		new Ciclos().insertarCicloEnBD();
+		
+	}
 	
 	
 }

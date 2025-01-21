@@ -7,49 +7,34 @@ import java.awt.event.WindowEvent;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 
-import org.hibernate.Query;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
-
-import hibernate.HibernateUtil;
-import modelo.Ciclos;
-import modelo.Users;
+import vista.PanelHorarios;
 import vista.PanelLogin;
+import vista.PanelMenu;
 import vista.Principal;
 import vista.Principal.enumAcciones;
 
 public class Controlador implements ActionListener {
-	private ArrayList<Users> usuarios;
+	// private ArrayList<Users> usuariosArrayList;
+
 	private vista.Principal vistaPrincipal;
 	private PanelLogin panelLogin;
-	
+	private PanelMenu panelMenu;
+	private PanelHorarios panelHorario;
+
 	private Socket cliente;
 	private DataOutputStream salida;
 	private DataInputStream entrada;
-	private Users usuario = new Users();
-	
-	private String user; //Usuario recogido del TextField
-	private String pass; //Contraseña recogido del TextField
-	
-	private String usuarioConectado; //Para almacenar el usuario con el que me he logueado
-	private String contrasenaConectada; //Para almacenar la contraseña con el que me he logueado
-	
-	private static int cicloId = 6; 
-	private static String nombreCiclo = "ARI";
-	
+
+	private String usuarioTxt; // Usuario recogido del TextField
+	private String passTxt; // Contraseña recogido del TextField
+	private int idProfesor; // Id del profesor introducido
+
 	private String host = "localhost";
 	private int puerto = 5000;
-	
-	private Session session;
 
 	/*
 	 * *** CONSTRUCTORES ***
@@ -61,33 +46,28 @@ public class Controlador implements ActionListener {
 	 * @param vistaPrincipal Objeto vista.
 	 */
 	public Controlador(vista.Principal vistaPrincipal) {
-	    this.vistaPrincipal = vistaPrincipal;
-	    this.inicializarControlador();
-	    this.session = HibernateUtil.getSessionFactory().openSession();
-	    cargarUsuariosDesdeBD(); // Cargar los usuarios al iniciar el controlador
-	   
-	    
-	    
-	 // Agregar Boton de cierre de ventana para manejar el cierre
-	    
- 		vistaPrincipal.addWindowListener(new WindowAdapter() {
- 			@Override
- 			public void windowClosing(WindowEvent e) {
- 				
- 				cerrarSesion();
- 				System.exit(0); 
- 			}
- 		});
+		this.vistaPrincipal = vistaPrincipal;
+		this.inicializarControlador();
+		incializarServidor(); // Inicializacion de conexionado con el servidor
+
+		// Agregar Boton de cierre de ventana para manejar el cierre
+
+		vistaPrincipal.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+
+				cerrarSesion();
+			}
+		});
 	}
 
 	private void inicializarControlador() {
-		
 
 		// Atribuyo los paneles
 		panelLogin = this.vistaPrincipal.getPanelLogin();
-		this.vistaPrincipal.getPanelMenu();
+		panelMenu = this.vistaPrincipal.getPanelMenu();
+		panelHorario = this.vistaPrincipal.getPanelHorarios();
 
-		
 		// Acciones en el Panel Login
 
 		this.vistaPrincipal.getPanelLogin().getBtnContinuar().addActionListener(this);
@@ -99,38 +79,36 @@ public class Controlador implements ActionListener {
 		this.vistaPrincipal.getPanelMenu().getBtnConsultar().addActionListener(this);
 		this.vistaPrincipal.getPanelMenu().getBtnConsultar()
 				.setActionCommand(Principal.enumAcciones.CARGAR_HORARIOS.toString());
-		
+
 		this.vistaPrincipal.getPanelMenu().getBtnOtrosHorarios().addActionListener(this);
 		this.vistaPrincipal.getPanelMenu().getBtnOtrosHorarios()
 				.setActionCommand(Principal.enumAcciones.CARGAR_OTROS_HORARIOS.toString());
-		
+
 		this.vistaPrincipal.getPanelMenu().getBtnVerReuniones().addActionListener(this);
 		this.vistaPrincipal.getPanelMenu().getBtnVerReuniones()
 				.setActionCommand(Principal.enumAcciones.CARGAR_REUNIONES.toString());
-		
+
 		this.vistaPrincipal.getPanelMenu().getBtnDesconectar().addActionListener(this);
 		this.vistaPrincipal.getPanelMenu().getBtnDesconectar()
 				.setActionCommand(Principal.enumAcciones.DESCONECTAR.toString());
-		
+
 		// Acciones en el Panel Horarios
-		
+
 		this.vistaPrincipal.getPanelHorarios().getBtnVolver().addActionListener(this);
 		this.vistaPrincipal.getPanelHorarios().getBtnVolver()
 				.setActionCommand(Principal.enumAcciones.CARGAR_MENU.toString());
-		
+
 		// Acciones en el Panel Otros Horarios
-		
+
 		this.vistaPrincipal.getPanelOtrosHorarios().getBtnVolver().addActionListener(this);
 		this.vistaPrincipal.getPanelOtrosHorarios().getBtnVolver()
 				.setActionCommand(Principal.enumAcciones.CARGAR_MENU.toString());
-		
+
 		// Acciones en el Panel Reuniones
-		
+
 		this.vistaPrincipal.getPanelReuniones().getBtnVolver().addActionListener(this);
 		this.vistaPrincipal.getPanelReuniones().getBtnVolver()
 				.setActionCommand(Principal.enumAcciones.CARGAR_MENU.toString());
-		
-	
 
 	}
 
@@ -138,204 +116,138 @@ public class Controlador implements ActionListener {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		
+
 		Principal.enumAcciones accion = Principal.enumAcciones.valueOf(e.getActionCommand());
 
 		switch (accion) {
-		
+
 		case CARGAR_LOGIN:
 			this.vistaPrincipal.mVisualizarPaneles(Principal.enumAcciones.CARGAR_LOGIN);
 			break;
-					
+
 		case CARGAR_MENU:
 			this.vistaPrincipal.mVisualizarPaneles(Principal.enumAcciones.CARGAR_MENU);
 			break;
-			
+
 		case CARGAR_HORARIOS:
 			this.vistaPrincipal.mVisualizarPaneles(Principal.enumAcciones.CARGAR_HORARIOS);
+			mMostrarHorarios(accion);
 			break;
-		
+
 		case CARGAR_OTROS_HORARIOS:
 			this.vistaPrincipal.mVisualizarPaneles(Principal.enumAcciones.CARGAR_OTROS_HORARIOS);
 			break;
-		
+
 		case CARGAR_REUNIONES:
 			this.vistaPrincipal.mVisualizarPaneles(Principal.enumAcciones.CARGAR_REUNIONES);
 			break;
-			
-			
+
 		case INSERTAR_LOGIN:
-			insertarLogin();
-			conectarConServidor(cliente,salida,entrada);
-			insertarCicloEnBD(accion);
+			
+			insertarLogin(accion); // Traspaso del usuario y contraseña introducidos en los TextField
 			break;
-			
-			
+
 		case DESCONECTAR:
-			
+
 			this.vistaPrincipal.mVisualizarPaneles(Principal.enumAcciones.CARGAR_LOGIN);
 			JOptionPane.showMessageDialog(null, "Se ha desconectado con exito.");
 			break;
 
 		default:
-			
+
 			break;
 
 		}
 
 	}
 
-
-	//Consulta Hibernate para recoger todos los profesores
-	
-	private void cargarUsuariosDesdeBD() {
-	    
-		usuarios = new ArrayList<>();
-
-	    try {
-	        // Consulta para obtener los usuarios
-	        String hql = "FROM Users u WHERE u.tipos.name = 'profesor'";
-	        Query q = session.createQuery(hql);
-	        
-	        @SuppressWarnings("unchecked")
-	        List<Users> users = q.list();
-
-	        // Agregar los usuarios al ArrayList 'usuarios'
-	        for (Users user : users) {
-	            usuarios.add(user);
-	            System.out.println("Usuario: " + user.getUsername());
-	            System.out.println("Contraseña: " + user.getPassword());
-	        }
-
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	        JOptionPane.showMessageDialog(null, "Error al cargar los profesores de la base de datos.");
-	    }
-	}
-
-	//Método de validación de Login 
-	public void insertarLogin() {
-		
-	     user = panelLogin.getUserTxt().getText().trim();
-	     pass = new String(panelLogin.getPassTxt().getPassword()).trim();
-
-	    if (!user.isEmpty() && !pass.isEmpty()) {
-	        boolean usuarioValido = false;
-
-	        for (Users usu : usuarios) {
-	        	
-	            if (user.equals(usu.getUsername()) && pass.equals(usu.getPassword())) { 
-	            	
-	            	usuarioValido = true;
-	            	JOptionPane.showMessageDialog(null, "Usuario Correcto");	
-	            	
-	            	//Almaceno el usuario y la contraseña
-	            	usuarioConectado=user;
-	            	contrasenaConectada=pass;
-	            	
-	            	this.vistaPrincipal.mVisualizarPaneles(Principal.enumAcciones.CARGAR_MENU);
-	             }
-	        }
-
-	        if (!usuarioValido) {
-	            JOptionPane.showMessageDialog(null, "Usuario o Contraseña Incorrectos");
-	        }
-	    } else {
-	        JOptionPane.showMessageDialog(null, "Rellene todos los campos");
-	    }
-
-	    panelLogin.getUserTxt().setText("");
-	    panelLogin.getPassTxt().setText("");
-	    
-	    
-	}
-	
-	//Conexionado del cliente con el servidor
-	
-	private void conectarConServidor(Socket cliente, DataOutputStream salida, DataInputStream entrada) {
-
-	       try {
-	    	   
-			cliente = new Socket(host, puerto); 
-			System.out.println("Conectado al servidor con puerto: " + puerto);
-			
+	private void incializarServidor() {
+		// TODO Auto-generated method stub
+		try {
+			cliente = new Socket(host, puerto);
+			salida = new DataOutputStream(cliente.getOutputStream());
 			entrada = new DataInputStream(cliente.getInputStream());
-	        salida = new DataOutputStream(cliente.getOutputStream());
-	        
-
-	        // Recibo y contesto al primer mensaje del servidor
-	        String preguntaServidor1 = entrada.readUTF();
-	        System.out.println(preguntaServidor1);
-	        
-	        String fraseParaServidor = "Hola Servidor, te mando mi usuario y contraseña.";
-	        salida.writeUTF(fraseParaServidor); 
-	        
-	        // Enviar el usuario y la contraseña al servidor
-	        if (usuarioConectado != null && contrasenaConectada != null) {
-	        	
-	        	int contrasena= Integer.parseInt(contrasenaConectada);
-	        	
-	            salida.writeUTF(usuarioConectado);
-	            salida.writeInt(contrasena);
-	        }
-
-	        // Recibo el mensaje con el ID del servidor
-	        int miID = entrada.readInt();
-	        System.out.println("Mi ID es: "+miID);
-		
-	       } catch (IOException e) {
-			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
-		
-	       }
-	       
+		}
 	}
 
+	private void insertarLogin(enumAcciones accion) {
+		// TODO Auto-generated method stub
 
-	//Insercion de un ciclo nuevo en la base de datos SQL
-	
-	private void insertarCicloEnBD(enumAcciones accion) {
-	    Transaction tx = null;
-	   
-	    try {
-	        // Comprobar si el ciclo ya existe en la base de datos
-	         cicloId = 6; 
-	         nombreCiclo = "ARI";
+		try {
+			usuarioTxt = this.vistaPrincipal.getPanelLogin().getUserTxt().getText().trim();
+			passTxt = new String(this.vistaPrincipal.getPanelLogin().getPassTxt().getPassword()).trim();
 
-	        Ciclos cicloExistente = (Ciclos) session.createQuery("FROM Ciclos WHERE id = :cicloId")
-	                .setParameter("cicloId", cicloId)
-	                .uniqueResult();
+			if (!usuarioTxt.isEmpty() && !passTxt.isEmpty()) {
 
-	        if (cicloExistente == null) {
-	            // Si no existe, se inserta un nuevo ciclo
-	            tx = session.beginTransaction();
-	            System.out.println("Insertando Ciclo nuevo...\n");
+				salida.writeInt(1);
+				salida.writeUTF(usuarioTxt); // Mando el valor del txtField
+				salida.writeUTF(passTxt); // Mando el valor del passField
+				salida.flush();
 
-	            Ciclos nuevoCiclo = new Ciclos(cicloId, nombreCiclo);
-	            session.save(nuevoCiclo);
+				idProfesor = entrada.readInt();
+				System.out.println("Mi ID: " + idProfesor);
 
-	            tx.commit();
-	            System.out.println("Ciclo ARI insertado con éxito");
+				if (idProfesor != 0) {
+					JOptionPane.showMessageDialog(null, "Profesor Logueado Correctamente.");
+					this.vistaPrincipal.mVisualizarPaneles(enumAcciones.CARGAR_MENU);
+				} else {
+					JOptionPane.showMessageDialog(null, "El profesor ingresado no existe.");
+				}
+			} else if (usuarioTxt.isEmpty() || passTxt.isEmpty()) {
+				JOptionPane.showMessageDialog(null, "Rellene todos los campos");
+			}
+		} catch (IOException e) {
 
-	        } else {
-	            System.out.println("El ciclo con ID " + cicloId + " ya ha sido insertado previamente.");
-	        }
+			e.printStackTrace();
+		}
 
-	    } catch (Exception e1) {
-	    	
-	        if (tx != null)
-	            tx.rollback();
-	        e1.printStackTrace();
-	        
-	    }
 	}
-	
-	
-	//Metodo para que al desconectarme cierre la sesion
+
+	// Metodo Para Mostrar Horarios del profesor seleccionado
+	private void mMostrarHorarios(enumAcciones accion) {
+
+		DefaultTableModel dtm = new DefaultTableModel();
+
+		dtm.addColumn("HORARIOS");
+		dtm.setRowCount(0);
+
+		panelHorario.getTablaHorarios().setModel(dtm);
+		panelHorario.revalidate();
+		panelHorario.repaint();
+
+	}
+
+	// Metodo para que al desconectarme cierre la sesion
+
 	private void cerrarSesion() {
-		 if (session != null && session.isOpen()) {
-		        session.close();
-		        System.out.println("Sesion Cerrada con exito");
-		 }
+		try {
+
+			// Cerrar el socket y los flujos si están inicializados
+
+			if (salida != null) {
+				salida.close();
+				System.out.println("salida cerrado.");
+			}
+			if (entrada != null) {
+				entrada.close();
+				System.out.println("entrada cerrado.");
+			}
+			if (cliente != null && !cliente.isClosed()) {
+				cliente.close();
+				System.out.println("Socket cerrado.");
+			}
+
+			JOptionPane.showMessageDialog(null, "Sesión cerrada correctamente.");
+
+		} catch (IOException e) {
+			JOptionPane.showMessageDialog(null, "No se ha podido cerrar la sesión.");
+		} finally {
+
+			System.exit(0);
+		}
 	}
+
 }

@@ -5,12 +5,15 @@ import javax.swing.JLabel;
 import java.awt.Font;
 import javax.swing.JButton;
 import java.awt.Color;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 
 public class PanelHorarios extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 
 	private JButton btnVolver;
+	private JTable tablaHorarios;
 	/**
 	 * Create the panel.
 	 */
@@ -20,13 +23,20 @@ public class PanelHorarios extends JPanel {
 		
 		JLabel lblHorarios = new JLabel("HORARIOS");
 		lblHorarios.setFont(new Font("Tahoma", Font.PLAIN, 29));
-		lblHorarios.setBounds(236, 85, 159, 28);
+		lblHorarios.setBounds(236, 54, 159, 28);
 		add(lblHorarios);
 		
 		btnVolver = new JButton("VOLVER");
 		btnVolver.setFont(new Font("Tahoma", Font.PLAIN, 15));
 		btnVolver.setBounds(25, 31, 98, 34);
 		add(btnVolver);
+		
+		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setBounds(46, 106, 534, 304);
+		add(scrollPane);
+		
+		tablaHorarios = new JTable();
+		scrollPane.setViewportView(tablaHorarios);
 
 	}
 	public JButton getBtnVolver() {
@@ -35,10 +45,12 @@ public class PanelHorarios extends JPanel {
 	public void setBtnVolver(JButton btnVolver) {
 		this.btnVolver = btnVolver;
 	}
-
-	
-	
-
+	public JTable getTablaHorarios() {
+		return tablaHorarios;
+	}
+	public void setTablaHorarios(JTable tablaHorarios) {
+		this.tablaHorarios = tablaHorarios;
+	}
 	
 	
 }
