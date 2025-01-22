@@ -199,7 +199,6 @@ public class Users implements java.io.Serializable {
 		this.horarioses = horarioses;
 	}
 
-	//Consulta Hibernate para recoger todos los profesores
 	
 	@Override
 	public String toString() {
@@ -211,7 +210,8 @@ public class Users implements java.io.Serializable {
 				+ horarioses + "]";
 	}
 
-	//Consulta Hibernate para verificar que el usuario introducido es de tipo profesor
+	//Consulta para verificar que el usuario introducido es de tipo profesor
+	
 	public int insertarLogin(String usuario, String contrasena) {
 		
 		SessionFactory sesion = HibernateUtil.getSessionFactory();
@@ -226,11 +226,102 @@ public class Users implements java.io.Serializable {
 			return usuarioComprobado.id;
 		}
 	}
+	
+	//Obtencion del horario del profesor mediante la id
+	
+	public String[][] getHorarioById(int idProfesor) {
+		String[][] horarioProfesor= { { "08:00-09:00", "", "", "", "", "", "", "" }, { "09:00-10:00", "", "", "", "", "", "", "" },
+				{ "10:00-11:00", "", "", "", "", "", "", "" }, { "11:00-12:00", "", "", "", "", "", "", "" },
+				{ "12:00-13:00", "", "", "", "", "", "", "" } };
+
+		SessionFactory sesion = HibernateUtil.getSessionFactory();
+		Session session = sesion.openSession();
+		String hql = "from Horarios where users = " + idProfesor + " ";
+		Query q = session.createQuery(hql);
+		List<?> filas = q.list();
+
+		for (int i = 0; i < filas.size(); i++) {
+			Horarios horario = (Horarios) filas.get(i);
+			int dia = conseguirDia(horario.getId().getDia());
+			int hora = Integer.parseInt(horario.getId().getHora());
+			horarioProfesor[hora - 1][dia] = horario.getModulos().getNombre();
+		}
+
+		return horarioProfesor;
+	}
+
+	//Obtener los dias de la BD
+	
+	private int conseguirDia(String string) {
+		// TODO Auto-generated method stub
+		int dia = 0;
+		if (string.equals("L/A")) {
+			dia = 1;
+		} else if (string.equals("M/A")) {
+			dia = 2;
+		} else if (string.equals("X")) {
+			dia = 3;
+		} else if (string.equals("J/O")) {
+			dia = 4;
+		} else if (string.equals("V/O")) {
+			dia = 5;
+		} else if (string.equals("S/L")) {
+			dia = 6;
+		} else if (string.equals("D/I")) {
+			dia = 7;
+		}
+		return dia;
+	}
+	
+	//Consulta para el comboBox en Otros Horarios
+	
+	public String[] getProfesores(int idLogueado) {
+		
+	    String[] nombresProfesores = new String[0];
+	 
+	    SessionFactory sesion = HibernateUtil.getSessionFactory();
+	    Session session = sesion.openSession();
+
+	    try {
+	        // Consulta HQL para obtener profesores excepto el usuario logueado	
+	        String hql = "from Users where tipos.name = 'profesor' and id != :idLogueado";
+	        Query query = session.createQuery(hql);
+	        query.setParameter("idLogueado", idLogueado);
+	        
+	        List<Users> profesores = query.list();
+
+	        // Convertir los nombres de los profesores a un array de Strings   
+	        nombresProfesores = new String[profesores.size()];
+	        
+	        for (int i = 0; i < profesores.size(); i++) {
+	            nombresProfesores[i] = profesores.get(i).getNombre();
+	        }
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    } finally {
+	        session.close();
+	    }
+
+	    return nombresProfesores;
+	}
+
+	//Obtencion del Id del profesor seleccionado
+	
+	public int obtenerIdProfesor(String nombreProfesor) {
+		
+		SessionFactory sesion = HibernateUtil.getSessionFactory();
+		Session session = sesion.openSession();
+		String hql = "from Users where username = '" + nombreProfesor + "' AND tipos.name = 'profesor' ";
+		Query q = session.createQuery(hql);
+		Users idProfesor = (Users) q.uniqueResult();
+		if (idProfesor == null) {
+			return 0;
+		} else {
+			return idProfesor.id;
+		}
+	}
 
 	
-
-	
-
 	
 	
 		

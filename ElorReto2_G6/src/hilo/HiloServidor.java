@@ -3,17 +3,11 @@ package hilo;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-
+import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JOptionPane;
-
-import org.hibernate.Query;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-
-import hibernate.HibernateUtil;
 import modelo.Ciclos;
 import modelo.Users;
 
@@ -32,8 +26,13 @@ public class HiloServidor extends Thread {
 
 		try {
 			
+			//Para mandar variables primitivas
 			DataOutputStream salida = new DataOutputStream(conexionCli.getOutputStream());
 			DataInputStream entrada = new DataInputStream(conexionCli.getInputStream());
+			
+			//Para mandar objetos
+			ObjectOutputStream salidaObj= new ObjectOutputStream(conexionCli.getOutputStream());
+			
 			
 			while (!conectado) {
 				
@@ -43,7 +42,15 @@ public class HiloServidor extends Thread {
 				case 1:
 					iniciarSesion(entrada, salida);
 			      break;
-				
+				case 2:
+					visualizarHorarioProfesor(entrada, salida, salidaObj);
+					break;
+				case 3:
+					visualizarProfesores(entrada, salida, salidaObj);
+					break;
+				case 4:
+					recogerIdProfesor(entrada, salida, salidaObj);
+					break;
 				default:
 					break;
 				}
@@ -57,6 +64,7 @@ public class HiloServidor extends Thread {
 		}
 	}
 
+	
 	private void iniciarSesion(DataInputStream entrada, DataOutputStream salida) {
 		try {
 			String usuario = entrada.readUTF();
@@ -79,5 +87,53 @@ public class HiloServidor extends Thread {
 		
 	}
 	
+	private void visualizarHorarioProfesor(DataInputStream entrada, DataOutputStream salida, ObjectOutputStream salidaObj) {
+		try {
+			int idProfesor=entrada.readInt();
+			
+			String[][] horarioProfesor = new Users().getHorarioById(idProfesor);
+			
+			salidaObj.writeObject(horarioProfesor);
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
+	}
+	
+	private void visualizarProfesores(DataInputStream entrada, DataOutputStream salida, ObjectOutputStream salidaObj) {
+		try {
+			
+			int idProfesor=entrada.readInt();
+			
+			String[] profesores = new Users().getProfesores(idProfesor);
+			
+			salidaObj.writeObject(profesores);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+	}
+
+	private void recogerIdProfesor(DataInputStream entrada, DataOutputStream salida, ObjectOutputStream salidaObj) {
+		
+		try {
+			
+			String nombreProfesor = entrada.readUTF();
+			
+			int idProfesor = new Users().obtenerIdProfesor(nombreProfesor);
+			
+			salida.writeInt(idProfesor);
+			salida.flush();
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+
 	
 }

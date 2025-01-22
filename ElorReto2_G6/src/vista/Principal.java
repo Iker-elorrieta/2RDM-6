@@ -23,7 +23,7 @@ public class Principal extends JFrame {
 		CARGAR_REUNIONES,
 		
 		INSERTAR_LOGIN,
-		
+		SELECCIONAR_PROFESOR,
 		DESCONECTAR,
 		
 		
@@ -68,7 +68,7 @@ public class Principal extends JFrame {
 
 	private void mCrearPanelContenedor() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 641, 475);
+		setBounds(600, 200, 641, 475);
 		panelContenedor = new JPanel();
 		panelContenedor.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(panelContenedor);
@@ -99,7 +99,7 @@ public class Principal extends JFrame {
     private void mCrearPanelHorarios() {
     	panelHorarios = new PanelHorarios();
     	panelHorarios.setBackground(new Color(255, 255, 255));
-    	panelHorarios.setBounds(0, 0, 984, 561);
+    	panelHorarios.setBounds(0, 0, 840, 480);
 		panelContenedor.add(panelHorarios);
 		panelHorarios.setVisible(false);
 		
@@ -137,30 +137,33 @@ public class Principal extends JFrame {
 		panelReuniones.setVisible(false);
 		
 		switch (panel) {
-		
-			case CARGAR_LOGIN: 
-				panelLogin.setVisible(true);
-				break;
-			
-			case CARGAR_MENU: 
-				panelMenu.setVisible(true);
-				break;
-				
-			case CARGAR_HORARIOS: 
-				panelHorarios.setVisible(true);
-				break;
-				
-			case CARGAR_OTROS_HORARIOS: 
-				panelOtrosHorarios.setVisible(true);
-				break;
-				
-			case CARGAR_REUNIONES: 
-				panelReuniones.setVisible(true);
-				break;
-			
-			default:
-				break;
-			
+        case CARGAR_LOGIN:
+            panelLogin.setVisible(true);
+            setBounds(600, 200, 641, 475); 
+            break;
+
+        case CARGAR_MENU:
+            panelMenu.setVisible(true);
+            setBounds(600, 200, 641, 475); 
+            break;
+
+        case CARGAR_HORARIOS:
+            panelHorarios.setVisible(true);
+            setBounds(600, 200, 840, 480);
+            break;
+
+        case CARGAR_OTROS_HORARIOS:
+            panelOtrosHorarios.setVisible(true);
+            setBounds(600, 200, 641, 475); 
+            break;
+
+        case CARGAR_REUNIONES:
+            panelReuniones.setVisible(true);
+            setBounds(600, 200, 641, 475); 
+            break;
+
+        default:
+            break;
 		}
 	}
 	

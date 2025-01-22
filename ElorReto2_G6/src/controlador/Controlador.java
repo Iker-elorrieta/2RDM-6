@@ -7,8 +7,12 @@ import java.awt.event.WindowEvent;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.net.Socket;
+
+import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
+import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
 import vista.PanelHorarios;
@@ -28,10 +32,15 @@ public class Controlador implements ActionListener {
 	private Socket cliente;
 	private DataOutputStream salida;
 	private DataInputStream entrada;
-
+	private ObjectInputStream entradaObj;
+	
 	private String usuarioTxt; // Usuario recogido del TextField
 	private String passTxt; // Contraseña recogido del TextField
 	private int idProfesor; // Id del profesor introducido
+	private int idProfesorSeleccionado;  // Id del profesor seleccionado en el combobox
+	
+	private int opcion;
+	private JComboBox<String> comboBox;
 
 	private String host = "localhost";
 	private int puerto = 5000;
@@ -60,8 +69,26 @@ public class Controlador implements ActionListener {
 			}
 		});
 	}
+	
+	private void incializarServidor() {
+	
+		try {
+			cliente = new Socket(host, puerto);
+			salida = new DataOutputStream(cliente.getOutputStream());
+			entrada = new DataInputStream(cliente.getInputStream());
+			entradaObj = new ObjectInputStream(cliente.getInputStream());
+		} catch (IOException e) {
+			
+			e.printStackTrace();
+		}
+	}
 
+	@SuppressWarnings("unchecked")
 	private void inicializarControlador() {
+		
+		//Atribuyo el combobox del Panel Otros Horarios
+		comboBox= this.vistaPrincipal.getPanelOtrosHorarios().getCmbProfesor();
+		
 
 		// Atribuyo los paneles
 		panelLogin = this.vistaPrincipal.getPanelLogin();
@@ -103,6 +130,10 @@ public class Controlador implements ActionListener {
 		this.vistaPrincipal.getPanelOtrosHorarios().getBtnVolver().addActionListener(this);
 		this.vistaPrincipal.getPanelOtrosHorarios().getBtnVolver()
 				.setActionCommand(Principal.enumAcciones.CARGAR_MENU.toString());
+		
+		this.vistaPrincipal.getPanelOtrosHorarios().getBtnSeleccionar().addActionListener(this);
+		this.vistaPrincipal.getPanelOtrosHorarios().getBtnSeleccionar()
+				.setActionCommand(Principal.enumAcciones.SELECCIONAR_PROFESOR.toString());
 
 		// Acciones en el Panel Reuniones
 
@@ -136,6 +167,7 @@ public class Controlador implements ActionListener {
 
 		case CARGAR_OTROS_HORARIOS:
 			this.vistaPrincipal.mVisualizarPaneles(Principal.enumAcciones.CARGAR_OTROS_HORARIOS);
+			mMostrarProfesores(accion);
 			break;
 
 		case CARGAR_REUNIONES:
@@ -145,6 +177,11 @@ public class Controlador implements ActionListener {
 		case INSERTAR_LOGIN:
 			
 			insertarLogin(accion); // Traspaso del usuario y contraseña introducidos en los TextField
+			break;
+			
+		case SELECCIONAR_PROFESOR:
+			profesorSeleccionado(comboBox,accion);
+			
 			break;
 
 		case DESCONECTAR:
@@ -161,20 +198,9 @@ public class Controlador implements ActionListener {
 
 	}
 
-	private void incializarServidor() {
-		// TODO Auto-generated method stub
-		try {
-			cliente = new Socket(host, puerto);
-			salida = new DataOutputStream(cliente.getOutputStream());
-			entrada = new DataInputStream(cliente.getInputStream());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
 
 	private void insertarLogin(enumAcciones accion) {
-		// TODO Auto-generated method stub
+		opcion=1;
 
 		try {
 			usuarioTxt = this.vistaPrincipal.getPanelLogin().getUserTxt().getText().trim();
@@ -182,7 +208,7 @@ public class Controlador implements ActionListener {
 
 			if (!usuarioTxt.isEmpty() && !passTxt.isEmpty()) {
 
-				salida.writeInt(1);
+				salida.writeInt(opcion);
 				salida.writeUTF(usuarioTxt); // Mando el valor del txtField
 				salida.writeUTF(passTxt); // Mando el valor del passField
 				salida.flush();
@@ -206,20 +232,121 @@ public class Controlador implements ActionListener {
 
 	}
 
-	// Metodo Para Mostrar Horarios del profesor seleccionado
+	// Metodo Para Mostrar Horarios del profesor Logeado
+	
 	private void mMostrarHorarios(enumAcciones accion) {
+	    opcion = 2;
+	    try {
+	        salida.writeInt(opcion);
+	        
+	        // Utiliza idProfesor para cargar el horario del profesor logueado
+	        salida.writeInt(idProfesor); 
+	        salida.flush();
 
-		DefaultTableModel dtm = new DefaultTableModel();
+	        String[][] horarioProfesor = (String[][]) entradaObj.readObject();
 
-		dtm.addColumn("HORARIOS");
-		dtm.setRowCount(0);
+	        cargarHorario(horarioProfesor, this.vistaPrincipal.getPanelHorarios().getTablaHorarios());
 
-		panelHorario.getTablaHorarios().setModel(dtm);
-		panelHorario.revalidate();
-		panelHorario.repaint();
-
+	    } catch (IOException | ClassNotFoundException e) {
+	        e.printStackTrace();
+	    }
 	}
 
+
+	// Metodo Para Mostrar Horarios del profesor seleccionado
+	
+	private JComboBox<String> mMostrarProfesores(enumAcciones accion) {
+		opcion=3;
+		try {
+			
+			salida.writeInt(opcion);
+			salida.writeInt(idProfesor);
+			salida.flush();
+			
+			//Recojo el array de profesores
+			String[] profesorado= (String[]) entradaObj.readObject();
+			
+			//Lo adhiero al comboBox
+			comboBox.removeAllItems();
+			// Itera sobre el array y añade cada profesor al comboBox
+			for (String profesor : profesorado) {
+			    comboBox.addItem(profesor);
+			}
+			
+			// Mensaje de confirmación
+	        JOptionPane.showMessageDialog(null, "Profesores cargados correctamente.");
+
+	    } catch (IOException | ClassNotFoundException e) {
+	    	
+	        e.printStackTrace();
+	        JOptionPane.showMessageDialog(null, "Error al cargar los profesores.");
+	    }
+		return comboBox;
+	}
+	
+	// Metodo Para Mostrar El comboBox con los demás profesores
+	
+	private void profesorSeleccionado(JComboBox<String> comboBox, enumAcciones accion) {
+	    opcion = 4;
+	    String profesorSeleccionado = (String) comboBox.getSelectedItem();
+
+	    try {
+	        salida.writeInt(opcion);
+	        salida.writeUTF(profesorSeleccionado);
+
+	        // Actualiza el ID del profesor seleccionado 
+	        idProfesorSeleccionado = entrada.readInt(); 
+	        
+	        System.out.println("ID Profesor Seleccionado: " + idProfesorSeleccionado);
+	        JOptionPane.showMessageDialog(null, "Profesor Seleccionado Correctamente");
+
+	        // Muestra los horarios del profesor seleccionado 
+	        mostrarHorariosSeleccionado();
+
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	    }
+	}
+
+	// Metodo Para Mostrar Horarios del profesor Seleccionado en el comboBox
+	
+	private void mostrarHorariosSeleccionado() {
+		 opcion = 2;
+		    try {
+		        salida.writeInt(opcion);
+		        
+		        // Utiliza el ID del profesor seleccionado 
+		        salida.writeInt(idProfesorSeleccionado); 
+		        salida.flush();
+
+		        String[][] horarioProfesor = (String[][]) entradaObj.readObject();
+
+		        cargarHorario(horarioProfesor, this.vistaPrincipal.getPanelHorarios().getTablaHorarios());
+		        this.vistaPrincipal.mVisualizarPaneles(enumAcciones.CARGAR_HORARIOS);
+
+		    } catch (IOException | ClassNotFoundException e) {
+		        e.printStackTrace();
+		    }	
+	}
+
+	// Metodo para cargar el horario del profesor
+
+	private void cargarHorario(String[][] horarioProfesor, JTable tablaHorarios) {
+		
+		DefaultTableModel modelo = new DefaultTableModel(horarioProfesor,
+				new String[] { "Hora/Día", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo" }) {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public boolean isCellEditable(int row, int column) {
+				return false;
+			}
+		};
+
+		tablaHorarios.setModel(modelo);
+	}
+	
+	
 	// Metodo para que al desconectarme cierre la sesion
 
 	private void cerrarSesion() {
