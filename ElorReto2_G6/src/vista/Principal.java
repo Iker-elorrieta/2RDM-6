@@ -5,8 +5,6 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import java.awt.Color;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 
 public class Principal extends JFrame {
 
@@ -21,9 +19,12 @@ public class Principal extends JFrame {
 		CARGAR_HORARIOS,
 		CARGAR_OTROS_HORARIOS,
 		CARGAR_REUNIONES,
+		CARGAR_PENDIENTES,
 		
 		INSERTAR_LOGIN,
 		SELECCIONAR_PROFESOR,
+		ACEPTAR_REUNION,
+		RECHAZAR_REUNION,
 		DESCONECTAR,
 		
 		
@@ -40,6 +41,7 @@ public class Principal extends JFrame {
 	private PanelHorarios panelHorarios;
 	private PanelOtrosHorarios panelOtrosHorarios;
 	private PanelReuniones panelReuniones;
+	private PanelReunionesPendientes panelReunionesPendientes;
 	
 	public Principal() {
 		
@@ -60,6 +62,9 @@ public class Principal extends JFrame {
 		
 		//Panel de Reuniones
 		mCrearPanelReuniones();
+		
+		//Panel de Reuniones Pendientes
+		mCrearPanelReunionesPendientes();
 		
 		
 	}
@@ -118,12 +123,22 @@ public class Principal extends JFrame {
 	private void mCrearPanelReuniones() {
 		panelReuniones = new PanelReuniones();
 		panelReuniones.setBackground(new Color(255, 255, 255));
-		panelReuniones.setBounds(0, 0, 984, 561);
+		panelReuniones.setBounds(0, 0, 840, 675);
 		panelContenedor.add(panelReuniones);
 		panelReuniones.setVisible(false);
 		
 	}
 
+	private void mCrearPanelReunionesPendientes() {
+		panelReunionesPendientes = new PanelReunionesPendientes();
+		panelReunionesPendientes.setBackground(new Color(255, 255, 255));
+		panelReunionesPendientes.setBounds(0, 0, 840, 740);
+		panelContenedor.add(panelReunionesPendientes);
+		panelReunionesPendientes.setVisible(false);
+		
+	}
+	
+	
 	
 	//Visualizar Paneles
 	
@@ -135,35 +150,43 @@ public class Principal extends JFrame {
 		panelHorarios.setVisible(false);
 		panelOtrosHorarios.setVisible(false);
 		panelReuniones.setVisible(false);
+		panelReunionesPendientes.setVisible(false);
 		
 		switch (panel) {
-        case CARGAR_LOGIN:
-            panelLogin.setVisible(true);
-            setBounds(600, 200, 641, 475); 
-            break;
-
-        case CARGAR_MENU:
-            panelMenu.setVisible(true);
-            setBounds(600, 200, 641, 475); 
-            break;
-
-        case CARGAR_HORARIOS:
-            panelHorarios.setVisible(true);
-            setBounds(600, 200, 840, 480);
-            break;
-
-        case CARGAR_OTROS_HORARIOS:
-            panelOtrosHorarios.setVisible(true);
-            setBounds(600, 200, 641, 475); 
-            break;
-
-        case CARGAR_REUNIONES:
-            panelReuniones.setVisible(true);
-            setBounds(600, 200, 641, 475); 
-            break;
-
-        default:
-            break;
+			
+	        case CARGAR_LOGIN:
+	            panelLogin.setVisible(true);
+	            setBounds(600, 200, 641, 475); 
+	            break;
+	
+	        case CARGAR_MENU:
+	            panelMenu.setVisible(true);
+	            setBounds(600, 200, 641, 475); 
+	            break;
+	
+	        case CARGAR_HORARIOS:
+	            panelHorarios.setVisible(true);
+	            setBounds(600, 200, 840, 480);
+	            break;
+	
+	        case CARGAR_OTROS_HORARIOS:
+	            panelOtrosHorarios.setVisible(true);
+	            setBounds(600, 200, 641, 475); 
+	            break;
+	
+	        case CARGAR_REUNIONES:
+	            panelReuniones.setVisible(true);
+	            setBounds(600, 200, 840, 675);
+	            break;
+	         
+	        case CARGAR_PENDIENTES:
+	            panelReunionesPendientes.setVisible(true);
+	            //setBounds(600, 200, 993, 723);
+	            setBounds(600, 100, 850, 740);
+	            break;
+	
+	        default:
+	            break;
 		}
 	}
 	
@@ -229,17 +252,19 @@ public class Principal extends JFrame {
 	public void setPanelReuniones(PanelReuniones panelReuniones) {
 		this.panelReuniones = panelReuniones;
 	}
+
+
+	//Getters Setters Reuniones Pendientes
 	
-	
+	public PanelReunionesPendientes getPanelReunionesPendientes() {
+		return panelReunionesPendientes;
+	}
 
 
 
-	
-
-
-	
-
-	
+	public void setPanelReunionesPendientes(PanelReunionesPendientes panelReunionesPendientes) {
+		this.panelReunionesPendientes = panelReunionesPendientes;
+	}
 	
 	
 	
