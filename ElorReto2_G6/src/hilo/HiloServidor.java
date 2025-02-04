@@ -87,9 +87,11 @@ public class HiloServidor extends Thread {
 
 	private void iniciarSesion(DataInputStream entrada, DataOutputStream salida) {
 		try {
-			String usuario = entrada.readUTF();
-			String password = entrada.readUTF();
-			int usuarioComprobado = new Users().insertarLogin(usuario, password);
+			// Recibimos los datos cifrados
+	        String usuarioCifrado = entrada.readUTF();
+	        String contraCifrada = entrada.readUTF();
+			int usuarioComprobado = new Users().insertarLogin(usuarioCifrado, contraCifrada);
+			
 			salida.writeInt(usuarioComprobado);
 			salida.flush();
 			//Inserto el ciclo nuevo al iniciar sesion de forma correcta.

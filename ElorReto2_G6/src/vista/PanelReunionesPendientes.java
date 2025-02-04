@@ -34,7 +34,7 @@ public class PanelReunionesPendientes extends JPanel {
 		add(btnVolver);
 		
 		JScrollPane scrollPane_1 = new JScrollPane();
-		scrollPane_1.setBounds(84, 103, 686, 176);
+		scrollPane_1.setBounds(84, 103, 686, 173);
 		add(scrollPane_1);
 		
 		tablaPendientes = new JTable();
@@ -65,7 +65,7 @@ public class PanelReunionesPendientes extends JPanel {
 		add(lblOtrasReuniones);
 		
 		JScrollPane scrollPane_Otros = new JScrollPane();
-		scrollPane_Otros.setBounds(84, 436, 686, 176);
+		scrollPane_Otros.setBounds(84, 436, 686, 123);
 		add(scrollPane_Otros);
 		
 		tablaOtros = new JTable();

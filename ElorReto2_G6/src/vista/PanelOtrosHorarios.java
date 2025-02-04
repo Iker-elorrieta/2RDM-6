@@ -22,8 +22,8 @@ public class PanelOtrosHorarios extends JPanel {
 		setLayout(null);
 		
 		JLabel lblOtrosHorarios = new JLabel("OTROS HORARIOS");
-		lblOtrosHorarios.setFont(new Font("Tahoma", Font.PLAIN, 29));
-		lblOtrosHorarios.setBounds(180, 93, 271, 28);
+		lblOtrosHorarios.setFont(new Font("Tahoma", Font.PLAIN, 31));
+		lblOtrosHorarios.setBounds(166, 63, 271, 28);
 		add(lblOtrosHorarios);
 		
 		btnVolver = new JButton("VOLVER");
@@ -42,7 +42,7 @@ public class PanelOtrosHorarios extends JPanel {
 		add(cmbProfesor);
 		
 		btnSeleccionar = new JButton("SELECCIONAR PROFESOR");
-		btnSeleccionar.setBounds(209, 267, 191, 28);
+		btnSeleccionar.setBounds(201, 267, 208, 28);
 		add(btnSeleccionar);
 
 	}

@@ -1,6 +1,8 @@
 package modelo;
 // Generated 13 ene 2025, 13:01:47 by Hibernate Tools 6.5.1.Final
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -212,20 +214,45 @@ public class Users implements java.io.Serializable {
 	}
 
 	//Consulta para verificar que el usuario introducido es de tipo profesor
-	
-	public int insertarLogin(String usuario, String contrasena) {
-		
-		SessionFactory sesion = HibernateUtil.getSessionFactory();
-		Session session = sesion.openSession();
-		String hql = "from Users where username = '" + usuario + "' AND password = '" + contrasena
-				+ "' AND tipos.name = 'profesor' ";
-		Query q = session.createQuery(hql);
-		Users usuarioComprobado = (Users) q.uniqueResult();
-		if (usuarioComprobado == null) {
-			return 0;
-		} else {
-			return usuarioComprobado.id;
-		}
+	@SuppressWarnings("unchecked")
+	public int insertarLogin(String usuarioCifrado, String contraCifrada) {
+	    SessionFactory sesion = HibernateUtil.getSessionFactory();
+	    Session session = sesion.openSession();
+	    
+	    try {
+	        // Consulta para obtener todos los profesores
+	        String hql = "FROM Users WHERE tipos.name = 'profesor'";
+	        Query q = session.createQuery(hql);
+	        List<Users> listaProfesores = q.list(); // Obtenemos todos los profesores
+
+	        for (Users profesor : listaProfesores) {
+	            // Ciframos el username y password almacenados en la BD
+	            String usuarioHasheado = cifrarTexto(profesor.getUsername());
+	            String contraHasheada = cifrarTexto(profesor.getPassword());
+	            System.out.println("USUARIO: "+usuarioHasheado);
+	            System.out.println("CONTRASEÑA: "+contraHasheada);
+
+	            // Comparamos con los valores cifrados recibidos desde el cliente
+	            if (usuarioHasheado.equals(usuarioCifrado) && contraHasheada.equals(contraCifrada)) {
+	                return profesor.getId(); // Si coinciden, devolvemos el ID del usuario
+	            }
+	        }
+	        return 0; // Si no encuentra coincidencia, devuelve 0
+	    } finally {
+	        session.close();
+	    }
+	}
+
+	private String cifrarTexto(String texto) {
+	    try {
+	        MessageDigest md = MessageDigest.getInstance("SHA");
+	        md.update(texto.getBytes());
+	        byte[] resumen = md.digest();
+	        return new String(resumen); 
+	    } catch (NoSuchAlgorithmException e) {
+	        e.printStackTrace();
+	        return null;
+	    }
 	}
 	
 	//Obtencion del horario del profesor mediante la id

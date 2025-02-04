@@ -12,6 +12,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Socket;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
 
@@ -21,14 +23,10 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import vista.PanelHorarios;
-import vista.PanelLogin;
-import vista.PanelMenu;
 import vista.Principal;
 import vista.Principal.enumAcciones;
 
 public class Controlador implements ActionListener {
-	// private ArrayList<Users> usuariosArrayList;
 
 	private vista.Principal vistaPrincipal;
 
@@ -237,6 +235,8 @@ public class Controlador implements ActionListener {
 
 	}
 
+	//Metodo para Insertar el Login
+	
 	private void insertarLogin() {
 		opcion = 1;
 
@@ -247,8 +247,30 @@ public class Controlador implements ActionListener {
 			if (!usuarioTxt.isEmpty() && !passTxt.isEmpty()) {
 
 				salida.writeInt(opcion);
-				salida.writeUTF(usuarioTxt); // Mando el valor del txtField
-				salida.writeUTF(passTxt); // Mando el valor del passField
+				
+				String usuarioCifrado="";
+				String contraCifrada="";
+				try {
+	                MessageDigest md = MessageDigest.getInstance("SHA");
+	                
+	                byte usuarioBytes[] = usuarioTxt.getBytes();
+	                md.update(usuarioBytes);
+	                byte usuarioResumen[] = md.digest();
+	                
+	                byte contraBytes[] = passTxt.getBytes();
+	                md.update(contraBytes);
+	                byte contraResumen[] = md.digest();
+
+	                usuarioCifrado = new String(usuarioResumen);
+	                contraCifrada = new String(contraResumen);
+	                System.out.println("USUARIO GENERADO:\n" + usuarioCifrado);
+	                System.out.println("CONTRA GENERADO:\n" + contraCifrada);
+	            } catch (NoSuchAlgorithmException e) {
+	                e.printStackTrace();
+	            }
+				
+				salida.writeUTF(usuarioCifrado);
+				salida.writeUTF(contraCifrada);
 				salida.flush();
 
 				idProfesor = entrada.readInt();
@@ -269,7 +291,7 @@ public class Controlador implements ActionListener {
 		}
 
 	}
-
+	
 	// Metodo Para Mostrar Horarios del profesor seleccionado
 
 	private JComboBox<String> mMostrarProfesores() {

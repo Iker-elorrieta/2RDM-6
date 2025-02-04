@@ -33,7 +33,7 @@ public class PanelReuniones extends JPanel {
 		add(btnVolver);
 		
 		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(46, 168, 735, 350);
+		scrollPane.setBounds(46, 168, 735, 273);
 		add(scrollPane);
 		
 		tablaReuniones = new JTable();

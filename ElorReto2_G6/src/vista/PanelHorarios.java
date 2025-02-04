@@ -32,7 +32,7 @@ public class PanelHorarios extends JPanel {
 		add(btnVolver);
 		
 		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(49, 97, 735, 289);
+		scrollPane.setBounds(49, 97, 735, 273);
 		add(scrollPane);
 		
 		tablaHorarios = new JTable();
