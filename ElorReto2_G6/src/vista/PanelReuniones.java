@@ -3,13 +3,10 @@ package vista;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
 import javax.swing.JLabel;
 import java.awt.Font;
 import javax.swing.JButton;
 import java.awt.Color;
-import java.awt.Component;
 
 public class PanelReuniones extends JPanel {
 
@@ -21,7 +18,6 @@ public class PanelReuniones extends JPanel {
 	/**
 	 * Create the panel.
 	 */
-	@SuppressWarnings("serial")
 	public PanelReuniones() {
 		setBackground(Color.WHITE);
 		setLayout(null);

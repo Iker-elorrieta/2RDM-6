@@ -11,10 +11,12 @@ public class PanelOtrosHorarios extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 	private JButton btnVolver,btnSeleccionar;
+	@SuppressWarnings("rawtypes")
 	private JComboBox cmbProfesor;
 	/**
 	 * Create the panel.
 	 */
+	@SuppressWarnings("rawtypes")
 	public PanelOtrosHorarios() {
 		setBackground(Color.WHITE);
 		setLayout(null);
@@ -50,9 +52,11 @@ public class PanelOtrosHorarios extends JPanel {
 	public void setBtnVolver(JButton btnVolver) {
 		this.btnVolver = btnVolver;
 	}
+	@SuppressWarnings("rawtypes")
 	public JComboBox getCmbProfesor() {
 		return cmbProfesor;
 	}
+	@SuppressWarnings("rawtypes")
 	public void setCmbProfesor(JComboBox cmbProfesor) {
 		this.cmbProfesor = cmbProfesor;
 	}

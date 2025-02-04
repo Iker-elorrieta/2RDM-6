@@ -31,9 +31,6 @@ public class Controlador implements ActionListener {
 	// private ArrayList<Users> usuariosArrayList;
 
 	private vista.Principal vistaPrincipal;
-	private PanelLogin panelLogin;
-	private PanelMenu panelMenu;
-	private PanelHorarios panelHorario;
 
 	private Socket cliente;
 	private DataOutputStream salida;
@@ -100,11 +97,6 @@ public class Controlador implements ActionListener {
 
 		// Atribuyo el combobox del Panel Otros Horarios
 		comboBox = this.vistaPrincipal.getPanelOtrosHorarios().getCmbProfesor();
-
-		// Atribuyo los paneles
-		panelLogin = this.vistaPrincipal.getPanelLogin();
-		panelMenu = this.vistaPrincipal.getPanelMenu();
-		panelHorario = this.vistaPrincipal.getPanelHorarios();
 
 		// Acciones en el Panel Login
 

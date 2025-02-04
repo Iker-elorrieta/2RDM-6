@@ -2,23 +2,18 @@ package hilo;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.gson.JsonPrimitive;
-
 import modelo.Ciclos;
 import modelo.Users;
 
@@ -121,7 +116,6 @@ public class HiloServidor extends Thread {
 			salidaObj.writeObject(horarioProfesor);
 			
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}		
 	}
@@ -135,7 +129,6 @@ public class HiloServidor extends Thread {
 			
 			salidaObj.writeObject(profesores);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -154,7 +147,6 @@ public class HiloServidor extends Thread {
 			salida.flush();
 			
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -168,12 +160,10 @@ public class HiloServidor extends Thread {
 			
 			int idProfesor=entrada.readInt();
 			String[][] reunionProfesor = new Users().getReuniones(idProfesor);
-			System.out.println("REUNIONES: " + Arrays.deepToString(reunionProfesor));
 			salidaObj.writeObject(reunionProfesor);
 			salidaObj.flush();
 			
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}		
 	}

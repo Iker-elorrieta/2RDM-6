@@ -5,7 +5,6 @@ import javax.swing.JLabel;
 import java.awt.Font;
 import javax.swing.JTextField;
 import javax.swing.JPasswordField;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import java.awt.Color;
 
