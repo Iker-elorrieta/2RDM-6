@@ -23,7 +23,7 @@ public class PanelHorarios extends JPanel {
 		
 		JLabel lblHorarios = new JLabel("HORARIOS");
 		lblHorarios.setFont(new Font("Tahoma", Font.PLAIN, 29));
-		lblHorarios.setBounds(236, 54, 159, 28);
+		lblHorarios.setBounds(337, 37, 159, 28);
 		add(lblHorarios);
 		
 		btnVolver = new JButton("VOLVER");
@@ -32,7 +32,7 @@ public class PanelHorarios extends JPanel {
 		add(btnVolver);
 		
 		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(46, 106, 534, 304);
+		scrollPane.setBounds(49, 97, 735, 273);
 		add(scrollPane);
 		
 		tablaHorarios = new JTable();

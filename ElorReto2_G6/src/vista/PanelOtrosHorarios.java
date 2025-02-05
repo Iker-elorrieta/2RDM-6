@@ -1,28 +1,29 @@
 package vista;
 
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.JLabel;
 import java.awt.Font;
 import javax.swing.JButton;
 import java.awt.Color;
+import javax.swing.JComboBox;
 
 public class PanelOtrosHorarios extends JPanel {
 
 	private static final long serialVersionUID = 1L;
-	private JButton btnVolver;
-	private JTable tablaOtroshorarios;
+	private JButton btnVolver,btnSeleccionar;
+	@SuppressWarnings("rawtypes")
+	private JComboBox cmbProfesor;
 	/**
 	 * Create the panel.
 	 */
+	@SuppressWarnings("rawtypes")
 	public PanelOtrosHorarios() {
 		setBackground(Color.WHITE);
 		setLayout(null);
 		
 		JLabel lblOtrosHorarios = new JLabel("OTROS HORARIOS");
-		lblOtrosHorarios.setFont(new Font("Tahoma", Font.PLAIN, 29));
-		lblOtrosHorarios.setBounds(179, 54, 271, 28);
+		lblOtrosHorarios.setFont(new Font("Tahoma", Font.PLAIN, 31));
+		lblOtrosHorarios.setBounds(166, 63, 271, 28);
 		add(lblOtrosHorarios);
 		
 		btnVolver = new JButton("VOLVER");
@@ -30,12 +31,19 @@ public class PanelOtrosHorarios extends JPanel {
 		btnVolver.setBounds(25, 31, 98, 34);
 		add(btnVolver);
 		
-		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(46, 106, 534, 304);
-		add(scrollPane);
+		JLabel lblElige = new JLabel("ELIGE UN PROFESOR");
+		lblElige.setFont(new Font("Tahoma", Font.PLAIN, 22));
+		lblElige.setBounds(201, 159, 271, 28);
+		add(lblElige);
 		
-		tablaOtroshorarios = new JTable();
-		scrollPane.setViewportView(tablaOtroshorarios);
+		cmbProfesor = new JComboBox();
+		cmbProfesor.setFont(new Font("Tahoma", Font.PLAIN, 21));
+		cmbProfesor.setBounds(99, 212, 403, 28);
+		add(cmbProfesor);
+		
+		btnSeleccionar = new JButton("SELECCIONAR PROFESOR");
+		btnSeleccionar.setBounds(201, 267, 208, 28);
+		add(btnSeleccionar);
 
 	}
 	public JButton getBtnVolver() {
@@ -44,8 +52,19 @@ public class PanelOtrosHorarios extends JPanel {
 	public void setBtnVolver(JButton btnVolver) {
 		this.btnVolver = btnVolver;
 	}
-	
-
-	
+	@SuppressWarnings("rawtypes")
+	public JComboBox getCmbProfesor() {
+		return cmbProfesor;
+	}
+	@SuppressWarnings("rawtypes")
+	public void setCmbProfesor(JComboBox cmbProfesor) {
+		this.cmbProfesor = cmbProfesor;
+	}
+	public JButton getBtnSeleccionar() {
+		return btnSeleccionar;
+	}
+	public void setBtnSeleccionar(JButton btnSeleccionar) {
+		this.btnSeleccionar = btnSeleccionar;
+	}
 	
 }

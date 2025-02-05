@@ -5,7 +5,6 @@ import javax.swing.JLabel;
 import java.awt.Font;
 import javax.swing.JTextField;
 import javax.swing.JPasswordField;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import java.awt.Color;
 
@@ -58,7 +57,7 @@ public class PanelLogin extends JPanel {
 		add(lblCentro);
 		
 		// Ajustar la imagen al JLabel
-		ImageUtils.ajustarImagenLabel(lblCentro, "C:\\Users\\in2dm3-a\\git\\2RDM-6\\ElorReto2_G6\\archivos\\elorrieta.png");
+		ImageUtils.ajustarImagenLabel(lblCentro, "archivos\\elorrieta.png");
 		
 
 	}

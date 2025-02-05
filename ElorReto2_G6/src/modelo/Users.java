@@ -1,17 +1,20 @@
 package modelo;
 // Generated 13 ene 2025, 13:01:47 by Hibernate Tools 6.5.1.Final
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.swing.JOptionPane;
-
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 
 import hibernate.HibernateUtil;
 
@@ -199,7 +202,6 @@ public class Users implements java.io.Serializable {
 		this.horarioses = horarioses;
 	}
 
-	//Consulta Hibernate para recoger todos los profesores
 	
 	@Override
 	public String toString() {
@@ -211,26 +213,380 @@ public class Users implements java.io.Serializable {
 				+ horarioses + "]";
 	}
 
-	//Consulta Hibernate para verificar que el usuario introducido es de tipo profesor
-	public int insertarLogin(String usuario, String contrasena) {
+	//Consulta para verificar que el usuario introducido es de tipo profesor
+	@SuppressWarnings("unchecked")
+	public int insertarLogin(String usuarioCifrado, String contraCifrada) {
+	    SessionFactory sesion = HibernateUtil.getSessionFactory();
+	    Session session = sesion.openSession();
+	    
+	    try {
+	        // Consulta para obtener todos los profesores
+	        String hql = "FROM Users WHERE tipos.name = 'profesor'";
+	        Query q = session.createQuery(hql);
+	        List<Users> listaProfesores = q.list(); // Obtenemos todos los profesores
+
+	        for (Users profesor : listaProfesores) {
+	            // Ciframos el username y password almacenados en la BD
+	            String usuarioHasheado = cifrarTexto(profesor.getUsername());
+	            String contraHasheada = cifrarTexto(profesor.getPassword());
+
+	            // Comparamos con los valores cifrados recibidos desde el cliente
+	            if (usuarioHasheado.equals(usuarioCifrado) && contraHasheada.equals(contraCifrada)) {
+	                return profesor.getId(); // Si coinciden, devolvemos el ID del usuario
+	            }
+	        }
+	        return 0; // Si no encuentra coincidencia, devuelve 0
+	    } finally {
+	        session.close();
+	    }
+	}
+
+	private String cifrarTexto(String texto) {
+	    try {
+	        MessageDigest md = MessageDigest.getInstance("SHA");
+	        md.update(texto.getBytes());
+	        byte[] resumen = md.digest();
+	        return new String(resumen); 
+	    } catch (NoSuchAlgorithmException e) {
+	        e.printStackTrace();
+	        return null;
+	    }
+	}
+	
+	//Obtencion del horario del profesor mediante la id
+	
+	public String[][] getHorarioById(int idProfesor) {
+		String[][] horarioProfesor= { { "08:00-09:00", "", "", "", "", "", "", "" }, { "09:00-10:00", "", "", "", "", "", "", "" },
+				{ "10:00-11:00", "", "", "", "", "", "", "" }, { "11:00-12:00", "", "", "", "", "", "", "" },
+				{ "12:00-13:00", "", "", "", "", "", "", "" } };
+
+		SessionFactory sesion = HibernateUtil.getSessionFactory();
+		Session session = sesion.openSession();
+		String hql = "from Horarios where users = " + idProfesor + " ";
+		Query q = session.createQuery(hql);
+		List<?> filas = q.list();
+
+		for (int i = 0; i < filas.size(); i++) {
+			Horarios horario = (Horarios) filas.get(i);
+			int dia = conseguirDia(horario.getId().getDia());
+			int hora = Integer.parseInt(horario.getId().getHora());
+			horarioProfesor[hora - 1][dia] = horario.getModulos().getNombre();
+		}
+
+		return horarioProfesor;
+	}
+
+
+	//Obtener los dias de la BD
+	
+	private int conseguirDia(String string) {
+		
+		int dia = 0;
+		if (string.equals("L/A")) {
+			dia = 1;
+		} else if (string.equals("M/A")) {
+			dia = 2;
+		} else if (string.equals("X")) {
+			dia = 3;
+		} else if (string.equals("J/O")) {
+			dia = 4;
+		} else if (string.equals("V/O")) {
+			dia = 5;
+		} else if (string.equals("S/L")) {
+			dia = 6;
+		} else if (string.equals("D/I")) {
+			dia = 7;
+		}
+		return dia;
+	}
+	
+	//Consulta para el comboBox en Otros Horarios
+	
+	public String[] getProfesores(int idLogueado) {
+		
+	    String[] nombresProfesores = new String[0];
+	 
+	    SessionFactory sesion = HibernateUtil.getSessionFactory();
+	    Session session = sesion.openSession();
+
+	    try {
+	        // Consulta HQL para obtener profesores excepto el usuario logueado	
+	        String hql = "from Users where tipos.name = 'profesor' and id != :idLogueado";
+	        Query query = session.createQuery(hql);
+	        query.setParameter("idLogueado", idLogueado);
+	        
+	        List<Users> profesores = query.list();
+
+	        // Convertir los nombres de los profesores a un array de Strings   
+	        nombresProfesores = new String[profesores.size()];
+	        
+	        for (int i = 0; i < profesores.size(); i++) {
+	            nombresProfesores[i] = profesores.get(i).getNombre();
+	        }
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    } finally {
+	        session.close();
+	    }
+
+	    return nombresProfesores;
+	}
+
+	//Obtencion del Id del profesor seleccionado
+	
+	public int obtenerIdProfesor(String nombreProfesor) {
 		
 		SessionFactory sesion = HibernateUtil.getSessionFactory();
 		Session session = sesion.openSession();
-		String hql = "from Users where username = '" + usuario + "' AND password = '" + contrasena
-				+ "' AND tipos.name = 'profesor' ";
+		String hql = "from Users where username = '" + nombreProfesor + "' AND tipos.name = 'profesor' ";
 		Query q = session.createQuery(hql);
-		Users usuarioComprobado = (Users) q.uniqueResult();
-		if (usuarioComprobado == null) {
+		Users idProfesor = (Users) q.uniqueResult();
+		if (idProfesor == null) {
 			return 0;
 		} else {
-			return usuarioComprobado.id;
+			return idProfesor.id;
 		}
+	}
+
+
+	public String[][] getReuniones(int idProfesor) {
+	    String[][] reunionProfesor = { 
+	        { "", "", "", "", "", "", "", "" }, 
+	        { "", "", "", "", "", "", "", "" },
+	        { "", "", "", "", "", "", "", "" }, 
+	        { "", "", "", "", "", "", "", "" },
+	        { "", "", "", "", "", "", "", "" } 
+	    };
+
+	    SessionFactory sesion = HibernateUtil.getSessionFactory();
+	    Session session = sesion.openSession();
+	    String hql = "from Reuniones where usersByProfesorId = " + idProfesor + " ";
+	    Query q = session.createQuery(hql);
+	    List<?> filas = q.list();
+
+	    for (int i = 0; i < filas.size(); i++) {
+	        Reuniones reuniones = (Reuniones) filas.get(i);
+	        int hora = conseguirHora(reuniones.getFecha().toLocalDateTime().getHour());
+	        int dia = reuniones.getFecha().toLocalDateTime().getDayOfWeek().getValue();
+
+	        // Concatenar título y estado
+	        reunionProfesor[hora][dia] = reuniones.getTitulo() + " - (" + reuniones.getEstado()+")";
+	    }
+
+	    return reunionProfesor;
+	}
+
+	
+	private int conseguirHora(int hora) {
+		// TODO Auto-generated method stub
+		if (hora == 8) {
+			hora = 0;
+		} else if (hora == 9) {
+			hora = 1;
+		} else if (hora == 10) {
+			hora = 2;
+		} else if (hora == 11) {
+			hora = 3;
+		} else if (hora == 12) {
+			hora = 4;
+		}
+		return hora;
+	}
+
+	//Metodo para obtener las reuniones que esten en pendiente o en conflicto
+	
+	public ArrayList<String[]> getReunionesPendientes(int idProfesor) {
+		ArrayList<String[]> reunionProfesor = new ArrayList<String[]>();
+		
+		SessionFactory sesion = HibernateUtil.getSessionFactory();
+		Session session = sesion.openSession();
+		String hql = "from Reuniones where usersByProfesorId = " + idProfesor +  " AND estado IN ('pendiente', 'conflicto')";
+		Query q = session.createQuery(hql);
+		List<?> filas = q.list();
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");  // Formato de fecha y hora
+		
+		for (int i = 0; i < filas.size(); i++) {
+			
+			Reuniones reuniones = (Reuniones) filas.get(i);
+			String fechaFormateada = sdf.format(reuniones.getFecha());
+		
+			String[] reunion = {
+					reuniones.getTitulo(),
+					fechaFormateada,
+					reuniones.getAula(),				
+			};
+			
+			reunionProfesor.add(reunion);
+		}
+		
+		return reunionProfesor;
+	}
+	
+	//Metodo para obtener las reuniones que no esten en pendiente o en conflicto
+	
+	public ArrayList<String[]> getOtrasReuniones(int idProfesor) {
+		ArrayList<String[]> otrasReuniones = new ArrayList<String[]>();
+		
+		SessionFactory sesion = HibernateUtil.getSessionFactory();
+		Session session = sesion.openSession();
+		String hql = "from Reuniones where usersByProfesorId = " + idProfesor +  " AND estado NOT IN ('pendiente', 'conflicto')";
+		Query q = session.createQuery(hql);
+		List<?> filas = q.list();
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");  // Formato de fecha y hora
+		
+		for (int i = 0; i < filas.size(); i++) {
+			
+			Reuniones reuniones = (Reuniones) filas.get(i);
+			String fechaFormateada = sdf.format(reuniones.getFecha());
+		
+			String[] reunion = {
+					reuniones.getTitulo(),
+					fechaFormateada,
+					reuniones.getAula(),				
+			};
+			
+			otrasReuniones.add(reunion);
+		}
+		
+		return otrasReuniones;
+	}
+
+	//Método para almacenar los ids de los centros de las reuniones pendientes o en conflicto
+	
+	public ArrayList<String> getIdsCentros(int idProfesor) {
+		
+		ArrayList<String> idsCentros = new ArrayList<String>();
+		
+		SessionFactory sesion = HibernateUtil.getSessionFactory();
+		Session session = sesion.openSession();
+		String hql = "from Reuniones where usersByProfesorId = " + idProfesor +  " AND estado IN ('pendiente', 'conflicto')";
+		Query q = session.createQuery(hql);
+		List<?> filas = q.list();
+		
+		for (int i = 0; i < filas.size(); i++) {
+			
+			Reuniones reuniones = (Reuniones) filas.get(i);
+			idsCentros.add(reuniones.getIdCentro());
+		}
+		
+		return idsCentros;
+	}
+	
+	//Método para almacenar los ids de los centros de las reuniones que no estan en pendiente o en conflicto
+	
+	public ArrayList<String> getIdsOtrosCentros(int idProfesor) {
+		
+		ArrayList<String> idsOtrosCentros = new ArrayList<String>();
+		
+		SessionFactory sesion = HibernateUtil.getSessionFactory();
+		Session session = sesion.openSession();
+		String hql = "from Reuniones where usersByProfesorId = " + idProfesor +  " AND estado NOT IN ('pendiente', 'conflicto')";
+		Query q = session.createQuery(hql);
+		List<?> filas = q.list();
+		
+		for (int i = 0; i < filas.size(); i++) {
+			
+			Reuniones reuniones = (Reuniones) filas.get(i);
+			idsOtrosCentros.add(reuniones.getIdCentro());
+		}
+		
+		return idsOtrosCentros;
+	}
+
+
+	public ArrayList<String> getEstados(int idProfesor) {
+		
+		ArrayList<String> estadoReuniones = new ArrayList<String>();
+		
+		SessionFactory sesion = HibernateUtil.getSessionFactory();
+		Session session = sesion.openSession();
+		String hql = "from Reuniones where usersByProfesorId = " + idProfesor + " AND estado IN ('pendiente', 'conflicto')";
+		Query q = session.createQuery(hql);
+		List<?> filas = q.list();
+		
+		for (int i = 0; i < filas.size(); i++) {
+			
+			Reuniones reuniones = (Reuniones) filas.get(i);
+			estadoReuniones.add(reuniones.getEstado());	
+		
+		}
+		return estadoReuniones;
+	}
+
+	public ArrayList<String> getOtrosEstados(int idProfesor) {
+		
+		ArrayList<String> estadoOtrasReuniones = new ArrayList<String>();
+		
+		SessionFactory sesion = HibernateUtil.getSessionFactory();
+		Session session = sesion.openSession();
+		String hql = "from Reuniones where usersByProfesorId = " + idProfesor + " AND estado NOT IN ('pendiente', 'conflicto')";
+		Query q = session.createQuery(hql);
+		List<?> filas = q.list();
+		
+		for (int i = 0; i < filas.size(); i++) {
+			
+			Reuniones reuniones = (Reuniones) filas.get(i);
+			estadoOtrasReuniones.add(reuniones.getEstado());
+		}
+		return estadoOtrasReuniones;
+	}
+
+	
+	public boolean modificarEstadoReunion(int idProfesor, String titulo, String fecha, String nuevoEstado) {
+	    boolean exito = false;
+
+	    Transaction tx = null; // Inicializar la transacción
+	    SessionFactory sesion = HibernateUtil.getSessionFactory();
+	    Session session = null;
+	    
+	    try {
+	    	 // Convertir el String a Date con el formato adecuado
+	        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm"); // Formato adecuado
+	        Date fechaDate = sdf.parse(fecha);
+
+	    	session = sesion.openSession(); // Abrir una nueva sesión por hilo
+		    tx = session.beginTransaction(); // Iniciar la transacción
+
+	        // Crear la consulta HQL para actualizar el estado
+	        String hql = "UPDATE Reuniones SET estado = :nuevoEstado WHERE usersByProfesorId.id = :idProfesor AND titulo = :titulo AND fecha = :fecha";
+	        Query query = session.createQuery(hql);
+	        query.setParameter("nuevoEstado", nuevoEstado);
+	        query.setParameter("idProfesor", idProfesor);
+	        query.setParameter("titulo", titulo);
+	        query.setParameter("fecha", fechaDate);
+
+	        int result = query.executeUpdate();
+
+	        // Si la actualización fue exitosa, commit
+	        if (result > 0) {
+	            exito = true;
+	        }
+
+	     // Confirmar la transacción
+	        tx.commit();
+	    } catch (Exception e) {
+	        if (tx != null) {
+	        	tx.rollback(); // En caso de error, hacer rollback
+	        }
+	        e.printStackTrace();
+	    } finally {
+	        session.close(); // Cerrar la sesión
+	    }
+
+	    return exito;
 	}
 
 	
 
 	
+	
 
+	
+
+	
+	
 	
 	
 		
