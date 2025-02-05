@@ -229,8 +229,6 @@ public class Users implements java.io.Serializable {
 	            // Ciframos el username y password almacenados en la BD
 	            String usuarioHasheado = cifrarTexto(profesor.getUsername());
 	            String contraHasheada = cifrarTexto(profesor.getPassword());
-	            System.out.println("USUARIO: "+usuarioHasheado);
-	            System.out.println("CONTRASEÑA: "+contraHasheada);
 
 	            // Comparamos con los valores cifrados recibidos desde el cliente
 	            if (usuarioHasheado.equals(usuarioCifrado) && contraHasheada.equals(contraCifrada)) {
@@ -277,6 +275,7 @@ public class Users implements java.io.Serializable {
 
 		return horarioProfesor;
 	}
+
 
 	//Obtener los dias de la BD
 	
@@ -513,7 +512,6 @@ public class Users implements java.io.Serializable {
 			estadoReuniones.add(reuniones.getEstado());	
 		
 		}
-		System.out.println("ESTADOS DE REUNIONES: "+estadoReuniones.toString());
 		return estadoReuniones;
 	}
 
@@ -532,7 +530,6 @@ public class Users implements java.io.Serializable {
 			Reuniones reuniones = (Reuniones) filas.get(i);
 			estadoOtrasReuniones.add(reuniones.getEstado());
 		}
-		System.out.println("ESTADOS DE OTRAS REUNIONES: "+estadoOtrasReuniones.toString());
 		return estadoOtrasReuniones;
 	}
 

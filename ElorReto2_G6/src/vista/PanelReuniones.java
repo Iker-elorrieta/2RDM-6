@@ -44,7 +44,7 @@ public class PanelReuniones extends JPanel {
         
 		btnVer = new JButton("VER PENDIENTES");
 		btnVer.setFont(new Font("Tahoma", Font.PLAIN, 15));
-		btnVer.setBounds(322, 571, 186, 34);
+		btnVer.setBounds(322, 525, 186, 34);
 		add(btnVer);
 
 	}

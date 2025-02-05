@@ -25,7 +25,7 @@ public class PanelReunionesPendientes extends JPanel {
 		
 		JLabel lblReuniones = new JLabel("REUNIONES PENDIENTES");
 		lblReuniones.setFont(new Font("Tahoma", Font.PLAIN, 29));
-		lblReuniones.setBounds(256, 37, 373, 28);
+		lblReuniones.setBounds(254, 76, 373, 28);
 		add(lblReuniones);
 		
 		btnVolver = new JButton("VOLVER");
@@ -33,15 +33,15 @@ public class PanelReunionesPendientes extends JPanel {
 		btnVolver.setBounds(25, 31, 98, 34);
 		add(btnVolver);
 		
-		JScrollPane scrollPane_1 = new JScrollPane();
-		scrollPane_1.setBounds(84, 103, 686, 173);
-		add(scrollPane_1);
+		JScrollPane scrollPendientes = new JScrollPane();
+		scrollPendientes.setBounds(82, 142, 686, 173);
+		add(scrollPendientes);
 		
 		tablaPendientes = new JTable();
 		tablaPendientes.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-		//tablaPendientes.setAutoResizeMode(JTable.HEIGHT);
-		scrollPane_1.setViewportView(tablaPendientes);
+		scrollPendientes.setViewportView(tablaPendientes);
 		tablaPendientes.setFillsViewportHeight(true);
+		
 		
 		tablaPendientes.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		tablaPendientes.setRowSelectionAllowed(true);
@@ -51,21 +51,21 @@ public class PanelReunionesPendientes extends JPanel {
 		
 		btnAceptar = new JButton("ACEPTAR");
 		btnAceptar.setFont(new Font("Tahoma", Font.PLAIN, 15));
-		btnAceptar.setBounds(160, 303, 118, 34);
+		btnAceptar.setBounds(158, 342, 118, 34);
 		add(btnAceptar);
 		
 		btnRechazar = new JButton("RECHAZAR");
 		btnRechazar.setFont(new Font("Tahoma", Font.PLAIN, 15));
-		btnRechazar.setBounds(588, 303, 118, 34);
+		btnRechazar.setBounds(586, 342, 118, 34);
 		add(btnRechazar);
 		
 		JLabel lblOtrasReuniones = new JLabel("OTRAS REUNIONES");
 		lblOtrasReuniones.setFont(new Font("Tahoma", Font.PLAIN, 29));
-		lblOtrasReuniones.setBounds(290, 376, 373, 28);
+		lblOtrasReuniones.setBounds(288, 415, 373, 28);
 		add(lblOtrasReuniones);
 		
 		JScrollPane scrollPane_Otros = new JScrollPane();
-		scrollPane_Otros.setBounds(84, 436, 686, 123);
+		scrollPane_Otros.setBounds(82, 475, 686, 123);
 		add(scrollPane_Otros);
 		
 		tablaOtros = new JTable();

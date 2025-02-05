@@ -263,8 +263,7 @@ public class Controlador implements ActionListener {
 
 	                usuarioCifrado = new String(usuarioResumen);
 	                contraCifrada = new String(contraResumen);
-	                System.out.println("USUARIO GENERADO:\n" + usuarioCifrado);
-	                System.out.println("CONTRA GENERADO:\n" + contraCifrada);
+	               
 	            } catch (NoSuchAlgorithmException e) {
 	                e.printStackTrace();
 	            }
@@ -275,19 +274,21 @@ public class Controlador implements ActionListener {
 
 				idProfesor = entrada.readInt();
 				System.out.println("Mi ID: " + idProfesor);
-
-				if (idProfesor != 0) {
-					JOptionPane.showMessageDialog(null, "Profesor Logueado Correctamente.");
-					this.vistaPrincipal.mVisualizarPaneles(enumAcciones.CARGAR_MENU);
-				} else {
-					JOptionPane.showMessageDialog(null, "El profesor ingresado no existe.");
-				}
+				
 			} else if (usuarioTxt.isEmpty() || passTxt.isEmpty()) {
 				JOptionPane.showMessageDialog(null, "Rellene todos los campos");
 			}
+			
 		} catch (IOException e) {
 
 			e.printStackTrace();
+		}
+		
+		if (idProfesor != 0) {
+			JOptionPane.showMessageDialog(null, "Profesor Logueado Correctamente.");
+			this.vistaPrincipal.mVisualizarPaneles(enumAcciones.CARGAR_MENU);
+		} else {
+			JOptionPane.showMessageDialog(null, "El profesor ingresado no existe.");
 		}
 
 	}
@@ -544,7 +545,6 @@ public class Controlador implements ActionListener {
 				textArea.setText(value == null ? "" : value.toString());
 				textArea.setWrapStyleWord(true);
 				textArea.setLineWrap(true);
-				System.out.println("ESTADOS ACTUALES:" + textArea.getText().toString()); 
 				// Obtener el valor de la celda (el estado de la reunión)
 	            String cellValue = value == null ? "" : value.toString();
 	            Color bgColor = Color.WHITE;  // Color de fondo por defecto
